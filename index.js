@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -26,19 +26,36 @@ async function run() {
     await client.connect();
 
     // create a MongoDB collection
-    const coffeeCollection = client.db('coffeeDB').collection('coffee')
+    const coffeeCollection = client.db("coffeeDB").collection("coffee");
+
     // get all data in the localhost link
-    app.get('/coffee', async(req, res) => {
+    app.get("/coffee", async (req, res) => {
       const cursor = coffeeCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    })
+    });
 
     // receive add coffee form data from the client side
     app.post("/coffee", async (req, res) => {
       const addCoffeeFormData = req.body;
       console.log(addCoffeeFormData);
       const result = await coffeeCollection.insertOne(addCoffeeFormData);
+      res.send(result);
+    });
+
+    // delete a coffee
+    app.delete("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coffeeCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // get unique item to update
+    app.get("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coffeeCollection.findOne(query);
       res.send(result);
     });
 
