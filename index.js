@@ -25,10 +25,21 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    // create a MongoDB collection
+    const coffeeCollection = client.db('coffeeDB').collection('coffee')
+    // get all data in the localhost link
+    app.get('/coffee', async(req, res) => {
+      const cursor = coffeeCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
     // receive add coffee form data from the client side
     app.post("/coffee", async (req, res) => {
       const addCoffeeFormData = req.body;
       console.log(addCoffeeFormData);
+      const result = await coffeeCollection.insertOne(addCoffeeFormData);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
