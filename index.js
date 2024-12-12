@@ -27,6 +27,8 @@ async function run() {
 
     // create a MongoDB collection
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
+    // firebase users
+    const userCollection = client.db("coffeeDB").collection("users");
 
     // get all data in the localhost link
     app.get("/coffee", async (req, res) => {
@@ -51,11 +53,50 @@ async function run() {
       res.send(result);
     });
 
+    // firebase users related API's
+
+    // get the users
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // create user in the DB
+    app.post("/users", async (req, res) => {
+      const newUser = req.body;
+      console.log("Creating new user ", newUser);
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    });
+
     // get unique item to update
     app.get("/coffee/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await coffeeCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update coffee
+    app.put("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedCoffee = req.body;
+
+      const coffee = {
+        $set: {
+          name: updatedCoffee.name,
+          quantity: updatedCoffee.quantity,
+          supplier: updatedCoffee.supplier,
+          taste: updatedCoffee.taste,
+          category: updatedCoffee.category,
+          details: updatedCoffee.details,
+          photo: updatedCoffee.photo,
+        },
+      };
+      const result = await coffeeCollection.updateOne(filter, coffee, options);
       res.send(result);
     });
 
