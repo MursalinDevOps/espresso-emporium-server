@@ -70,6 +70,14 @@ async function run() {
       res.send(result);
     });
 
+    // delete user from the DB
+    app.delete('/users/:id', async(req ,res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = userCollection.deleteOne(query);
+      res.send(result);
+    })
+
     // get unique item to update
     app.get("/coffee/:id", async (req, res) => {
       const id = req.params.id;
